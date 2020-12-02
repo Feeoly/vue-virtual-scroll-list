@@ -37,9 +37,23 @@ const Wrapper = {
       return this.$el ? this.$el[this.shapeKey] : 0
     },
 
+    // get current item size(offsetWidth and offsetHeight)
+    getItemSize () {
+      return {
+        offsetWidth: this.$el ? this.$el.offsetWidth : 0,
+        offsetHeight: this.$el ? this.$el.offsetHeight : 0
+      }
+    },
+
+    // get another edge size
+    getAnotherSize () {
+      const key = this.shapeKey === 'offsetWidth' ? 'offsetHeight' : 'offsetWidth'
+      return this.$el ? this.$el[key] : 0
+    },
+
     // tell parent current size identify by unqiue key
     dispatchSizeChange () {
-      this.$parent.$emit(this.event, this.uniqueKey, this.getCurrentSize(), this.hasInitial)
+      this.$parent.$emit(this.event, this.uniqueKey, this.getCurrentSize(), this.getItemSize(), this.hasInitial)
     }
   }
 }

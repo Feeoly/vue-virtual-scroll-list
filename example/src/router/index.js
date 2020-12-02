@@ -44,6 +44,12 @@ const routes = [
     path: '/page-mode',
     name: 'page-mode',
     component: () => import(/* webpackChunkName: "page-mode" */ '../views/page-mode/Main.vue')
+  },
+  // add multiple column view's router
+  {
+    path: '/multiple',
+    name: 'page-mode',
+    component: () => import(/* webpackChunkName: "multiple" */ '../views/multiple/multipleColumn.vue')
   }
 ]
 
@@ -53,7 +59,7 @@ if (process.env.NODE_ENV === 'development') {
   routes.push({
     path: '/dev',
     name: 'dev',
-    component: () => import(/* webpackChunkName: "dev" */ '../views/dev/Main.vue')
+    component: () => import(/* webpackChunkName: "dev" */ '../views/dynamic-size/Main.vue')
   })
 }
 

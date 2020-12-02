@@ -9,7 +9,8 @@ const DIRECTION_TYPE = {
 const CALC_TYPE = {
   INIT: 'INIT',
   FIXED: 'FIXED',
-  DYNAMIC: 'DYNAMIC'
+  DYNAMIC: 'DYNAMIC',
+  MULTICLN: 'MULTICLN'
 }
 const LEADING_BUFFER = 2
 
@@ -88,7 +89,15 @@ export default class Virtual {
   }
 
   // save each size map by id
-  saveSize (id, size) {
+  saveSize (id, size, sizeObj, clientSize) {
+    // console.log('siceSize', size, sizeObj, clientSize)
+    // todo: check clientSize.clientWidth、sizeObj.offsetWidth is Number
+    this.columnNum = Math.floor(clientSize.clientWidth / sizeObj.offsetWidth)
+    this.isMultiColumn = this.columnNum > 1
+    if (this.isMultiColumn) {
+      this.calcType = CALC_TYPE.MULTICLN
+    }
+
     this.sizes.set(id, size)
 
     // we assume size type is fixed at the beginning and remember first size value
@@ -113,6 +122,7 @@ export default class Virtual {
         delete this.firstRangeTotalSize
       }
     }
+    // console.log('this.calcType==', this.calcType)
   }
 
   // in some special situation (e.g. length change) we need to update in a row
@@ -168,6 +178,7 @@ export default class Virtual {
 
   handleBehind () {
     const overs = this.getScrollOvers()
+    console.log('handleBehind===', overs, this.range.start, this.range.start + this.param.buffer)
     // range should not change if scroll overs within buffer
     if (overs < this.range.start + this.param.buffer) {
       return
@@ -188,7 +199,10 @@ export default class Virtual {
     if (this.isFixedType()) {
       return Math.floor(offset / this.fixedSizeValue)
     }
-
+    console.log('getScrollOvers=offset', offset)
+    if (this.isMultiColumn) {
+      return this.getMutiClmScrollOvers()
+    }
     let low = 0
     let middle = 0
     let middleOffset = 0
@@ -198,12 +212,40 @@ export default class Virtual {
       // this.__bsearchCalls++
       middle = low + Math.floor((high - low) / 2)
       middleOffset = this.getIndexOffset(middle)
-
+      console.log('low, high, middleOffset---', low, high, middleOffset)
       if (middleOffset === offset) {
         return middle
       } else if (middleOffset < offset) {
         low = middle + 1
       } else if (middleOffset > offset) {
+        high = middle - 1
+      }
+    }
+
+    return low > 0 ? --low : 0
+  }
+
+  // multi column
+  getMutiClmScrollOvers () {
+    // if slot header exist, we need subtract its size
+    const offset = this.offset - this.param.slotHeaderSize
+    let low = 0
+    let middle = 0
+    let middleOffset = 0
+    let middleOffsetTrimed = 0
+    let high = this.param.uniqueIds.length
+
+    while (low <= high) {
+      // this.__bsearchCalls++
+      middle = low + Math.floor((high - low) / 2)
+      middleOffset = this.getIndexOffset(middle)
+      middleOffsetTrimed = middleOffset / this.columnNum
+      console.log('low, high, middleOffset-', low, high, middleOffset, middleOffsetTrimed)
+      if (middleOffsetTrimed === offset) {
+        return middle
+      } else if (middleOffsetTrimed < offset) {
+        low = middle + 1
+      } else if (middleOffsetTrimed > offset) {
         high = middle - 1
       }
     }

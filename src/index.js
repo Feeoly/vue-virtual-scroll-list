@@ -122,6 +122,23 @@ const VirtualList = Vue.component('virtual-list', {
       }
     },
 
+    // return client viewport size
+    getBothClientSize () {
+      const size = {
+        clientWidth: 0,
+        clientHeight: 0
+      }
+      if (this.pageMode) {
+        size.clientWidth = document.documentElement.clientWidth || document.body.clientWidth
+        size.clientHeight = document.documentElement.clientHeight || document.body.clientHeight
+      } else {
+        const { root } = this.$refs
+        size.clientWidth = root.clientWidth
+        size.clientHeight = root.clientHeight
+      }
+      return size
+    },
+
     // return all scroll size
     getScrollSize () {
       const key = this.isHorizontal ? 'scrollWidth' : 'scrollHeight'
@@ -216,9 +233,9 @@ const VirtualList = Vue.component('virtual-list', {
     },
 
     // event called when each item mounted or size changed
-    onItemResized (id, size) {
-      this.virtual.saveSize(id, size)
-      this.$emit('resized', id, size)
+    onItemResized (id, size, sizeObj) {
+      this.virtual.saveSize(id, size, sizeObj, this.getBothClientSize())
+      this.$emit('resized', id, size, sizeObj)
     },
 
     // event called when slot mounted or size changed
