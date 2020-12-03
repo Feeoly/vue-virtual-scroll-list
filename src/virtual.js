@@ -325,6 +325,8 @@ export default class Virtual {
   getPadFront () {
     if (this.isFixedType()) {
       return this.fixedSizeValue * this.range.start
+    } else if (this.isMultiColumn) {
+      return this.getIndexOffset(this.range.start) / this.columnNum
     } else {
       return this.getIndexOffset(this.range.start)
     }
